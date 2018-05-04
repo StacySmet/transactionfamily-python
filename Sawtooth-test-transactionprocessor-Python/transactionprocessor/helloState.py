@@ -12,9 +12,10 @@ def _make_hellotxp_address(name):
     return HELLOTXP_ADDRESS_PREFIX + hashlib.sha512(name.encode('utf-8')).hexdigest()[:64]
 
 class HarvestBatch(object):
-    def __init__(self,coopname,batchnr):
-        self.coopname = coopname
+    def __init__(self,coopname,batchnr, latitude=None,longitude=None):
+        self.coopname = coopname,
         self.batchnr = batchnr
+       # self.latlong = "lat: " + latitude + " long: " + longitude
 
 class HelloState(object):
 
@@ -52,6 +53,7 @@ class HelloState(object):
         :param coop: information of coop
 
         """
+        print(harvestbatch)
         batches = self._load_batches(name=name)
 
         batches[name] = harvestbatch
@@ -90,8 +92,7 @@ class HelloState(object):
         self._context.set_state({address: state_data},timeout=self.TIMEOUT)
         print("stored batch")
 
-
-    def _delete_batch(self, name):
+    def _delete_batch(self,name):
 
         address = _make_hellotxp_address(name)
 
@@ -154,12 +155,13 @@ class HelloState(object):
         :param batches:
         :return: the utf-8 encoded string stored in state.
         """
+
         batch_strs = []
-        for batchnr, b  in batches.items():
+        for name, b in batches.items():
             batch_str = ",".join(
-                [b.coopname,batchnr]
+                [name,b.batchnr]
             )
-            print(batchnr)
+            print(name)
             batch_strs.append(batch_str)
         print(batch_strs)
         return "|".join(sorted(batch_strs)).encode()

@@ -62,7 +62,19 @@ def add_create_parser(subparsers, parent_parser):
     )
 
     parser.add_argument(
-        '--url',
+        'batchnr',
+        type=int,
+        help='unique identification for the new batch'
+    )
+
+    parser.add_argument(
+        'username',
+        type=str,
+        help='username to fetch correct key'
+    )
+
+    parser.add_argument(
+        '--username',
         type=str,
         help="identify name of user's private key file"
     )
@@ -139,19 +151,16 @@ def add_delete_parser(subparsers, parent_parser):
         const=sys.maxsize,
         type=int,
         help='set time, in seconds, to wait for delete transaction to commit')
-def add_listitem_parser(subparsers, parent_parser):
+
+def add_list_parser(subparsers, parent_parser):
     parser = subparsers.add_parser(
-    'listitem',
-    help='display information from a specific batch',
-    description='show all information in state from a specific batch '
-    'showing name etc.',
-     parents=[parent_parser],
+        'list',
+        help='display information from all harvest batches',
+        description='show all information in state from all harvest batches '
+                    'showing name etc.',
+        parents=[parent_parser],
 
     )
-    parser.add_argument(
-        'name',
-        type=str,
-        help='name of the batch to be shown')
 
     parser.add_argument(
         '--url',
@@ -173,22 +182,25 @@ def add_listitem_parser(subparsers, parent_parser):
         type=str,
         help='specify username for authentication if REST API '
              'is using Basic Auth')
+
     parser.add_argument(
         '--auth-password',
         type=str,
         help='specify password for authentication if REST API '
              'is using Basic Auth')
 
-
-def add_list_parser(subparsers, parent_parser):
+def add_update_parser(subparsers, parent_parser):
     parser = subparsers.add_parser(
-        'list',
-        help='display information from all harvest batches',
-        description='show all information in state from all harvest batches '
-                    'showing name etc.',
-        parents=[parent_parser],
-
+        'update',
+        help='sends a transaction to change values of a previous batch (batchnr in test)',
+        description='Sends a hellotxp transaction to set <batchnr> to a new value',
+        parents=[parent_parser]
     )
+
+    parser.add_argument(
+        'name',
+        type=str,
+        help='name to be updated')
 
     parser.add_argument(
         '--url',
@@ -253,9 +265,8 @@ def create_parser(prog_name):
 
     add_create_parser(subparsers, parent_parser)
     add_list_parser(subparsers, parent_parser)
-    add_listitem_parser(subparsers, parent_parser)
     #add_show_parser(subparsers, parent_parser)
-    #add_take_parser(subparsers, parent_parser)
+    add_update_parser(subparsers, parent_parser)
     add_delete_parser(subparsers, parent_parser)
 
     return parser
@@ -263,6 +274,10 @@ def create_parser(prog_name):
 
 def do_create(args):
     name = args.name
+    batchnr = args.batchnr
+    username = args.username
+
+    print(args)
 
     url = _get_url(args)
     keyfile = _get_keyfile(args)
@@ -272,18 +287,19 @@ def do_create(args):
 
     if args.wait and args.wait > 0:
         response = client.create(
-            name, wait=args.wait,
+            name,batchnr,username, wait=args.wait,
             auth_user=auth_user,
             auth_password=auth_password)
     else:
         response = client.create(
-            name, auth_user=auth_user,
+            name, batchnr, username, auth_user=auth_user,
             auth_password=auth_password)
 
     print("Response: {}".format(response))
 
 def do_delete(args):
     name = args.name
+    username = args.username
 
     url = _get_url(args)
     keyfile = _get_keyfile(args)
@@ -293,17 +309,22 @@ def do_delete(args):
 
     if args.wait and args.wait > 0:
         response = client.delete(
-            name, wait=args.wait,
+            name,username, wait=args.wait,
             auth_user=auth_user,
             auth_password=auth_password)
     else:
         response = client.delete(
-            name, auth_user=auth_user,
+            name,username, auth_user=auth_user,
             auth_password=auth_password)
 
     print("Response: {}".format(response))
 
 def do_list(args):
+    '''
+    show a list of hellotxp related batches
+    :param args:
+    :return:
+    '''
     auth_user, auth_password = _get_auth_info(args)
 
     url = _get_url(args)
@@ -322,29 +343,39 @@ def do_list(args):
 
             name,batchnr = batch_data
 
-            print(name + ',' + batchnr)
+            print(name + ' ,' + batchnr)
     else:
         raise HellotxpException("No harvest batches to list")
 
-def do_listitem(args):
-    auth_user, auth_password = _get_auth_info(args)
-    name=args.name
+def do_update(args):
+    '''
+    update data from a batch
+    :param args:
+    :return:
+    '''
+    name = args.name
+    print(args)
+    batchnr = args.batchnr
+
     url = _get_url(args)
-    client = hellotxpClient(base_url=url,keyfile=None)
-    data = client.show(name, auth_user=auth_user, auth_password=auth_password)
-    if data is not None:
-        batch_str, batchnr_str = {
-            name: (name, batchnr)
-            for name, batchnr in [
-                batch.split(',')
-                for batch in data.decode().split('|')
-            ]
-        }[name]
-        batch = list(batch_str.replace("-", " "))
-        print("name:    : {}".format(name))
-        print("batch_nr:: {}".format(batchnr_str))
+    keyfile = _get_keyfile(args)
+    auth_user, auth_password = _get_auth_info(args)
+
+    client = hellotxpClient(base_url=url,keyfile=keyfile)
+
+    if args.wait and args.wait > 0:
+        response = client.upate(
+            name, batchnr, wait=args.wait,
+            auth_user=auth_user,
+            auth_password=auth_password
+        )
     else:
-        raise HellotxpException("Batch not found: {}".format(name))
+        response = client.update(
+            name, batchnr,
+            auth_user=auth_user,
+            auth_password=auth_password
+        )
+
 
 
 def _get_url(args):
@@ -352,11 +383,13 @@ def _get_url(args):
 
 
 def _get_keyfile(args):
-   # username = getpass.getuser() if args.username is None else args.username
+    print(args)
+    print("t.get_keyfile args  ")
+    username = getpass.getuser() if args.username is None else args.username
     home = os.path.expanduser("~")
     key_dir = os.path.join(home, ".sawtooth", "keys")
 
-    return '{}/{}.priv'.format(key_dir, 'ubuntu')
+    return '{}/{}.priv'.format(key_dir, username)
 
 def _get_auth_info(args):
     auth_user = args.auth_user
@@ -383,12 +416,11 @@ def main(prog_name=os.path.basename(sys.argv[0]), args=None):
         do_create(args)
     elif args.command == 'list':
         do_list(args)
-    elif args.command == 'listitem':
-        do_listitem(args)
    # elif args.command == 'show':
    #     do_show(args)
-   # elif args.command == 'take':
-   #     do_take(args)
+    elif args.command == 'update':
+        print(args)
+        do_update(args)
     elif args.command == 'delete':
         do_delete(args)
     else:

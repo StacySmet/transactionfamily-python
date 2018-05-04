@@ -36,7 +36,7 @@ class HelloTransactionHandler(TransactionHandler):
     # context parameter stores information about the current state
 
     def apply(self, transaction, context):
-        print("create transachtion header")
+        print("create transaction header")
         header = transaction.header
         signer = header.signer_public_key
         print("payload")
@@ -47,10 +47,12 @@ class HelloTransactionHandler(TransactionHandler):
         hello_state = HelloState(context)
         print(hello_state)
         print("start create batch")
+        print(hello_payload.batchnr)
+        print(hello_payload)
         if hello_payload.action == 'create':
 
-            new_batchnr = random.randint(1,50)
-            print(new_batchnr)
+            #new_batchnr = random.randint(1,50)
+            #print(new_batchnr)
             print(hello_payload.name)
             if hello_state.get_batch(hello_payload.name) is not None:
                 print("file exists")
@@ -59,8 +61,11 @@ class HelloTransactionHandler(TransactionHandler):
                 )
             print("creating a new  batch")
             batch = HarvestBatch(coopname=hello_payload.name,
-                                 batchnr=new_batchnr
+                                 batchnr=hello_payload.batchnr,
+                                # latitude=hello_payload.latitude,
+                                # longitude=hello_payload.longitude
                                 )
+
             print("batch created ")
             hello_state.set_batch(hello_payload.name,batch)
             print("get state")
@@ -69,3 +74,16 @@ class HelloTransactionHandler(TransactionHandler):
             if harvestbatch is None:
                 raise InvalidTransaction('Invalid action: batch does not exist')
             hello_state.delete_batch(hello_payload.name)
+
+        if hello_payload.action == 'update':
+            batch = hello_state.get_batch(hello_payload.name)
+
+            if batch is None:
+                raise InvalidTransaction(
+                    'Invalid action: No batch found to update by this name'
+                )
+
+        # update_batch = hello_state.
+
+
+
