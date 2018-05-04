@@ -67,11 +67,11 @@ def add_create_parser(subparsers, parent_parser):
         help='unique identification for the new batch'
     )
 
-    parser.add_argument(
-        'username',
-        type=str,
-        help='username to fetch correct key'
-    )
+   # parser.add_argument(
+   #     'username',
+   #     type=str,
+   #     help='username to fetch correct key'
+   # )
 
     parser.add_argument(
         '--username',
