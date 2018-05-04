@@ -80,6 +80,12 @@ def add_create_parser(subparsers, parent_parser):
     )
 
     parser.add_argument(
+        '--url',
+        type=str,
+        help="rest api url"
+    )
+
+    parser.add_argument(
         '--key-dir',
         type=str,
         help="identify directory of user's private key file"

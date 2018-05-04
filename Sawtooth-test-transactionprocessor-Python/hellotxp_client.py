@@ -155,10 +155,10 @@ class hellotxpClient:
 
         return result.text
 
-    def _send_hellotxp_txn(self,name,action,batchnr,wait=None,auth_user=None,auth_password=None):
+    def _send_hellotxp_txn(self,name,action,batchnr,username,wait=None,auth_user=None,auth_password=None):
         # create a new utf-8 encoded string for serialization
         print("name in send txn")
-        payload = ",".join([name,action,str(batchnr)]).encode()
+        payload = ",".join([name,action,str(batchnr),username]).encode()
         print("payload" + str(payload))
         address = self._get_address(name)
 
