@@ -345,6 +345,7 @@ def do_list(args):
     :param args:
     :return:
     '''
+
     auth_user, auth_password = _get_auth_info(args)
 
     url = _get_url(args)
@@ -357,13 +358,23 @@ def do_list(args):
         for batch in batches.decode().split('|')
 
     ]
-
+    print(harvest_list)
     if harvest_list is not None:
         for batch_data in harvest_list:
+            if len(batch_data) < 3:
+                name = batch_data
+                print(name)
+            elif len(batch_data) < 3:
+                name,batchnr = batch_data
+                print(name,batchnr)
+            elif len(batch_data) < 4:
+                name, batchnr,volume = batch_data
+                print(name,batchnr,volume)
+            elif len(batch_data) >= 4:
+                name,batchnr,volume,latlong = batch_data
+                print(name,batchnr,volume,latlong)
 
-            name,batchnr,volume,latlong = batch_data
 
-            print(name + ' ,' + str(batchnr))
     else:
         raise HellotxpException("No harvest batches to list")
 
