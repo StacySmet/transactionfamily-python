@@ -207,6 +207,46 @@ def add_list_parser(subparsers, parent_parser):
         help='specify password for authentication if REST API '
              'is using Basic Auth')
 
+def add_show_parser(subparsers, parent_parser):
+    parser = subparsers.add_parser(
+        'show',
+        help='Displays information about an harvest batch',
+        description='Displays the harvest batch <name>, showing the name, '
+        'batchnr,volume,location',
+        parents=[parent_parser])
+
+    parser.add_argument(
+        'name',
+        type=str,
+        help='identifier for the harvestbatch')
+
+    parser.add_argument(
+        '--url',
+        type=str,
+        help='specify URL of REST API')
+
+    parser.add_argument(
+        '--username',
+        type=str,
+        help="identify name of user's private key file")
+
+    parser.add_argument(
+        '--key-dir',
+        type=str,
+        help="identify directory of user's private key file")
+
+    parser.add_argument(
+        '--auth-user',
+        type=str,
+        help='specify username for authentication if REST API '
+        'is using Basic Auth')
+
+    parser.add_argument(
+        '--auth-password',
+        type=str,
+        help='specify password for authentication if REST API '
+        'is using Basic Auth')
+
 def add_update_parser(subparsers, parent_parser):
     parser = subparsers.add_parser(
         'update',
@@ -283,7 +323,7 @@ def create_parser(prog_name):
 
     add_create_parser(subparsers, parent_parser)
     add_list_parser(subparsers, parent_parser)
-    #add_show_parser(subparsers, parent_parser)
+    add_show_parser(subparsers, parent_parser)
     add_update_parser(subparsers, parent_parser)
     add_delete_parser(subparsers, parent_parser)
 
@@ -361,7 +401,7 @@ def do_list(args):
     print(harvest_list)
     if harvest_list is not None:
         for batch_data in harvest_list:
-            if len(batch_data) < 3:
+            if len(batch_data) < 2:
                 name = batch_data
                 print(name)
             elif len(batch_data) < 3:
@@ -377,6 +417,37 @@ def do_list(args):
 
     else:
         raise HellotxpException("No harvest batches to list")
+
+def do_show(args):
+    name = args.name
+
+    url = _get_url(args)
+    auth_user, auth_password = _get_auth_info(args)
+
+    client = hellotxpClient(base_url=url, keyfile=None)
+
+    data = client.show(name, auth_user=auth_user, auth_password=auth_password)
+
+    if data is not None:
+
+        batch_str, str_batchnr, str_volume,str_latlong = {
+            name: (name,batchnr,volume,latlong)
+            for name, batchnr, volume,latlong in [
+                batch.split(',')
+                for batch in data.decode().split('|')
+            ]
+        }[name]
+
+        batch = list(batch_str.replace("-", " "))
+
+        print("\nNAME:     : {}".format(batch_str))
+        print("BATCHNR  : {}".format(str_batchnr))
+        print("VOLUME  : {}".format(str_volume))
+        print("LATLONG  : {}".format(str_latlong))
+        print("")
+
+    else:
+        raise HellotxpException("Batch not found: {}".format(name))
 
 def do_update(args):
     '''
@@ -447,8 +518,8 @@ def main(prog_name=os.path.basename(sys.argv[0]), args=None):
         do_create(args)
     elif args.command == 'list':
         do_list(args)
-   # elif args.command == 'show':
-   #     do_show(args)
+    elif args.command == 'show':
+        do_show(args)
     elif args.command == 'update':
         print(args)
         do_update(args)

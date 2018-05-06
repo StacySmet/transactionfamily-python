@@ -96,6 +96,20 @@ class hellotxpClient:
         except BaseException:
             return None
 
+    def show(self, name, auth_user=None, auth_password=None):
+        address = self._get_address(name)
+
+        result = self._send_request(
+            "state/{}".format(address),
+            name=name,
+            auth_user=auth_user,
+            auth_password=auth_password)
+        try:
+            return base64.b64decode(yaml.safe_load(result)["data"])
+
+        except BaseException:
+            return None
+
     def _get_status(self, batch_id, wait, auth_user=None, auth_password=None):
         try:
             result = self._send_request(
