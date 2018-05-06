@@ -44,16 +44,20 @@ class hellotxpClient:
 
         self._signer = CryptoFactory(create_context('secp256k1')) .new_signer(private_key)
 
-    def create(self, name, batchnr, username, wait=None,auth_user=None, auth_password=None):
+    def create(self, name, batchnr,volume,latlong, username, wait=None, auth_user=None, auth_password=None):
+        print("batchnr in create" + str(batchnr))
         return self._send_hellotxp_txn(
             name,
             "create",
             batchnr,
+            volume,
+            latlong,
             username,
             wait=wait,
             auth_user=auth_user,
             auth_password=auth_password
         )
+
     def delete(self, name, username, wait=None, auth_user=None, auth_password=None):
         return self._send_hellotxp_txn(
             name,
@@ -155,11 +159,11 @@ class hellotxpClient:
 
         return result.text
 
-    def _send_hellotxp_txn(self,name,action,batchnr,username,wait=None,auth_user=None,auth_password=None):
+    def _send_hellotxp_txn(self,name,action,batchnr,volume,latlong,username,wait=None,auth_user=None,auth_password=None):
         # create a new utf-8 encoded string for serialization
         print("name in send txn")
-        payload = ",".join([name,action,str(batchnr),username]).encode()
-        print("payload" + str(payload))
+        payload = ",".join([name,action,str(batchnr),str(volume),str(latlong),username]).encode()
+        print("payload " + str(payload))
         address = self._get_address(name)
 
         header = TransactionHeader(

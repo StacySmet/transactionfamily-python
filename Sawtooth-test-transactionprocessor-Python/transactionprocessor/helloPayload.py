@@ -4,7 +4,9 @@ class HelloPayload(object):
     def __init__(self,payload):
         try:
             # the payload is csv utf-8 encoded string
-            name, action, batchnr,username = payload.decode().split(",")
+            name, action, batchnr, volume, latlong, username = payload.decode().split(",")
+            print("try init payload")
+            print(name,action,batchnr, volume, latlong, username)
         except ValueError:
             raise InvalidTransaction('Invalid payload serialization')
 
@@ -23,7 +25,10 @@ class HelloPayload(object):
         self._name = name
         self._action = action
         self._batchnr = batchnr
+        self._volume = volume
         self._username = username
+        self._latlong = latlong
+
         # self._latitude = latitude
         # self._longitude = longitude
         # self._batchnr = batchnr
@@ -40,13 +45,23 @@ class HelloPayload(object):
         return self._action
 
     @property
+    def batchnr(self):
+        return self._batchnr
+
+    @property
+    def volume(self):
+        return self._volume
+
+    @property
+    def latlong(self):
+        return self._latlong
+
+    @property
     def username(self):
         return self._username
+
 
     # @property
     # def longitude(self):
     #     return self._longitude
     #
-    @property
-    def batchnr(self):
-        return self._batchnr

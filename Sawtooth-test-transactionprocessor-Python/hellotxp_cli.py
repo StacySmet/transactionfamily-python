@@ -67,6 +67,18 @@ def add_create_parser(subparsers, parent_parser):
         help='unique identification for the new batch'
     )
 
+    parser.add_argument(
+        'volume',
+        type=float,
+        help='volume of batch'
+    )
+
+    parser.add_argument(
+        'latlong',
+        type=float,
+        help='location of batch at certain point'
+    )
+
    # parser.add_argument(
    #     'username',
    #     type=str,
@@ -281,7 +293,9 @@ def create_parser(prog_name):
 def do_create(args):
     name = args.name
     batchnr = args.batchnr
+    volume = args.volume
     username = args.username
+    latlong = args.latlong
 
     print(args)
 
@@ -293,12 +307,12 @@ def do_create(args):
 
     if args.wait and args.wait > 0:
         response = client.create(
-            name,batchnr,username, wait=args.wait,
+            name,batchnr,volume,latlong,username, wait=args.wait,
             auth_user=auth_user,
             auth_password=auth_password)
     else:
         response = client.create(
-            name, batchnr, username, auth_user=auth_user,
+            name, batchnr, volume,latlong, username, auth_user=auth_user,
             auth_password=auth_password)
 
     print("Response: {}".format(response))
@@ -347,9 +361,9 @@ def do_list(args):
     if harvest_list is not None:
         for batch_data in harvest_list:
 
-            name,batchnr = batch_data
+            name,batchnr,volume,latlong = batch_data
 
-            print(name + ' ,' + batchnr)
+            print(name + ' ,' + str(batchnr))
     else:
         raise HellotxpException("No harvest batches to list")
 

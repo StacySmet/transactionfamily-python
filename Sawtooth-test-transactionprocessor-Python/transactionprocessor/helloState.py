@@ -12,10 +12,13 @@ def _make_hellotxp_address(name):
     return HELLOTXP_ADDRESS_PREFIX + hashlib.sha512(name.encode('utf-8')).hexdigest()[:64]
 
 class HarvestBatch(object):
-    def __init__(self,coopname,batchnr, latitude=None,longitude=None):
-        self.coopname = coopname,
+    def __init__(self,coopname,batchnr,volume, latlong):
+        self.coopname = coopname
         self.batchnr = batchnr
-       # self.latlong = "lat: " + latitude + " long: " + longitude
+        self.volume = volume
+        self.latlong = latlong
+
+
 
 class HelloState(object):
 
@@ -84,6 +87,8 @@ class HelloState(object):
         :param batches:list of batches
         :return:
         """
+        print("store batch function")
+        print(str(batches[name].batchnr))
         nameToSet = name
         address = _make_hellotxp_address(nameToSet)
 
@@ -140,8 +145,8 @@ class HelloState(object):
         batches = {}
         try:
             for batch in data.decode().split("|"):
-                coopname,batchnr = batch.split(",")
-                batches[batchnr] = HarvestBatch(coopname,batchnr)
+                coopname,batchnr,volume = batch.split(",")
+                batches[coopname] = HarvestBatch(coopname,batchnr,volume)
         except ValueError:
             raise  InternalError("Failed to deserialize batch data")
 
@@ -155,14 +160,18 @@ class HelloState(object):
         :param batches:
         :return: the utf-8 encoded string stored in state.
         """
-
+        print("serializing data")
         batch_strs = []
-        for name, b in batches.items():
+
+        for name,b in batches.items():
+            print("starting loop to generate encoded string")
+            print(name + " " + str(b.batchnr)+ " " + str(b.volume)+ " " + str(b.latlong))
             batch_str = ",".join(
-                [name,b.batchnr]
+                [name,b.batchnr,b.volume,b.latlong]
             )
-            print(name)
+
             batch_strs.append(batch_str)
+            print(batch_strs)
         print(batch_strs)
         return "|".join(sorted(batch_strs)).encode()
 

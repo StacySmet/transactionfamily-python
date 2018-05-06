@@ -53,7 +53,7 @@ class HelloTransactionHandler(TransactionHandler):
 
             #new_batchnr = random.randint(1,50)
             #print(new_batchnr)
-            print(hello_payload.name)
+            print(hello_payload.name,hello_payload.batchnr)
             if hello_state.get_batch(hello_payload.name) is not None:
                 print("file exists")
                 raise InvalidTransaction(
@@ -62,12 +62,15 @@ class HelloTransactionHandler(TransactionHandler):
             print("creating a new  batch")
             batch = HarvestBatch(coopname=hello_payload.name,
                                  batchnr=hello_payload.batchnr,
-                                # latitude=hello_payload.latitude,
-                                # longitude=hello_payload.longitude
+                                 volume=hello_payload.volume,
+                                 latlong= hello_payload.latlong
                                 )
+            print(hello_payload.name,hello_payload.batchnr,hello_payload.volume,hello_payload.latlong)
+            print(batch.coopname,batch.batchnr,batch.volume,batch.latlong)
 
             print("batch created ")
-            hello_state.set_batch(hello_payload.name,batch)
+            print(str(batch.batchnr))
+            hello_state.set_batch(hello_payload.name, batch)
             print("get state")
         if hello_payload.action == 'delete':
             harvestbatch=hello_state.get_batch(hello_payload.name)
